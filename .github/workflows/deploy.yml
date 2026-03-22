@@ -20,18 +20,17 @@ jobs:
               git clone https://github.com/${{ github.repository_owner }}/my-trading-infra.git my-trading
             fi
             
-            # 2. จัดการโฟลเดอร์ App (ตัวโค้ด Next.js)
-            if [ ! -d "my-trading-app" ]; then
-              git clone https://github.com/${{ github.repository_owner }}/my-trading-app.git my-trading-app
-            fi
-
-            # 3. อัปเดตโค้ดล่าสุดทั้งสอง Repo
-            cd ~/my-trading && git pull origin main
-            cd ~/my-trading-app && git pull origin main
-
-            # 4. สั่งรัน Docker Compose
             cd ~/my-trading
-            docker-compose up -d --build
+            
+            # 2. อัปเดตไฟล์ docker-compose.yml ล่าสุด
+            git pull origin main
+
+            # 3. ดึง Image ล่าสุดจาก GHCR (ไม่ต้อง clone/pull repo app แล้ว)
+            # หมายเหตุ: ถ้าตั้ง package เป็น public จะ pull ได้ทันที
+            docker compose pull trading-app
+
+            # 4. สั่งรัน Docker Compose (ใช้คำสั่ง 'docker compose' เว้นวรรคตามมาตรฐานใหม่)
+            docker compose up -d
             
             # 5. ล้างขยะ (Image เก่าๆ)
             docker image prune -f

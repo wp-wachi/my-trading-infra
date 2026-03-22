@@ -1,21 +1,35 @@
 version: '3.8'
 
 services:
+# 1. ด่านหน้าจัดการ Domain และ SSL (HTTPS)
+  nginx-proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    restart: always
+    ports:
+      - '80:80'    # HTTP ปกติ
+      - '443:443'  # HTTPS (SSL)
+      - '81:81'    # หน้า Admin สำหรับตั้งค่า (เปิดเลข IP:81)
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+      
   # แอปเทรดทองของเรา
   trading-app:
-    build:
-      context: ../my-trading-app  # ชี้ข้ามไปที่โฟลเดอร์ App
-      dockerfile: Dockerfile
+    image: ghcr.io/wp-wachi/my-trading-app:latest
     container_name: my-trading-web
-    ports:
-      - "80:3000"
+    restart: always
+    # ports:
+    #   - "80:3000" # ปิดไว้ เพราะเราจะให้ nginx-proxy เป็นคนส่ง Traffic มาให้เอง
+    expose:
+      - "3000" # ให้บริการเฉพาะภายในเครือข่าย Docker
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/trading_db
     depends_on:
       - db
 
-  # ฐานข้อมูล Postgres สำหรับเก็บประวัติการเทรด/จดหนี้
+  # 3. ฐานข้อมูล Postgres
   db:
     image: postgres:15-alpine
     container_name: my-trading-db
