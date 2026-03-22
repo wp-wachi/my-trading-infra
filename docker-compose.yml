@@ -18,8 +18,8 @@ services:
     container_name: my-trading-db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER:-admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password123}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: trading_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
