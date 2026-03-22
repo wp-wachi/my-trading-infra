@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # แอปเทรดทองของเรา
+  trading-app:
+    build:
+      context: ../my-trading-app  # ชี้ข้ามไปที่โฟลเดอร์ App
+      dockerfile: Dockerfile
+    container_name: my-trading-web
+    ports:
+      - "8080:3000"
+    volumes:
+      - ../my-trading-app:/usr/share/nginx/html # แก้โค้ดปุ๊บ หน้าเว็บเปลี่ยนปั๊บ (Hot Reload)
+
+  # ฐานข้อมูล Postgres สำหรับเก็บประวัติการเทรด/จดหนี้
+  db:
+    image: postgres:15-alpine
+    container_name: my-trading-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password123}
+      POSTGRES_DB: trading_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
