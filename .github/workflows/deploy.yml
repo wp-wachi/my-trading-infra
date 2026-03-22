@@ -2,7 +2,7 @@ name: Deploy My Trading to Droplet
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -15,19 +15,23 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # 1. เข้าไปที่โฟลเดอร์โปรเจกต์ (ถ้าไม่มีให้สร้างและ clone)
-            if [ ! -d "~/my-trading" ]; then
-              mkdir -p ~/my-trading && cd ~/my-trading
-              git clone https://github.com/${{ github.repository_owner }}/my-trading-infra.git .
-              git clone https://github.com/${{ github.repository_owner }}/my-trading-app.git ~/my-trading-app
-            else
-              cd ~/my-trading && git pull origin main
-              cd ~/my-trading-app && git pull origin main
+            # 1. จัดการโฟลเดอร์ Infra (ตัวหลัก)
+            if [ ! -d "my-trading" ]; then
+              git clone https://github.com/${{ github.repository_owner }}/my-trading-infra.git my-trading
+            fi
+            
+            # 2. จัดการโฟลเดอร์ App (ตัวโค้ด Next.js)
+            if [ ! -d "my-trading-app" ]; then
+              git clone https://github.com/${{ github.repository_owner }}/my-trading-app.git my-trading-app
             fi
 
-            # 2. รัน Docker Compose (ใช้ไฟล์ .env ที่เราจะไปสร้างทิ้งไว้บน Droplet)
+            # 3. อัปเดตโค้ดล่าสุดทั้งสอง Repo
+            cd ~/my-trading && git pull origin main
+            cd ~/my-trading-app && git pull origin main
+
+            # 4. สั่งรัน Docker Compose
             cd ~/my-trading
             docker-compose up -d --build
-
-            # 3. ล้าง Image เก่าๆ เพื่อประหยัดพื้นที่ Droplet
+            
+            # 5. ล้างขยะ (Image เก่าๆ)
             docker image prune -f
