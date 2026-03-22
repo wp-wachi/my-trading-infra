@@ -8,9 +8,12 @@ services:
       dockerfile: Dockerfile
     container_name: my-trading-web
     ports:
-      - "8080:3000"
-    volumes:
-      - ../my-trading-app:/usr/share/nginx/html # แก้โค้ดปุ๊บ หน้าเว็บเปลี่ยนปั๊บ (Hot Reload)
+      - "80:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/trading_db
+    depends_on:
+      - db
 
   # ฐานข้อมูล Postgres สำหรับเก็บประวัติการเทรด/จดหนี้
   db:
@@ -23,8 +26,8 @@ services:
       POSTGRES_DB: trading_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # ports:
+      # - "5432:5432"
 
 volumes:
   postgres_data:
